@@ -1,7 +1,5 @@
 package com.zca.server;
 
-import com.zca.server.basic.servlet.Servlet;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -45,23 +43,17 @@ public class Server01 {
             System.out.println("一个客户端建立连接");
 
             // 获取请求协议
-            InputStream is = new BufferedInputStream(client.getInputStream());
-            byte[] datas = new byte[1024*10];
-            int len = is.read(datas);
-            String requestInfo = new String(datas, 0, len);
-            System.out.println(requestInfo);
-
+            Request request = new Request(client);
+            // 获取响应协议
             Response response = new Response(client);
-            response.print("<html>");
-            response.print("<head>");
-            response.print("<title>");
-            response.print("服务器响应成功");
-            response.print("</title>");
-            response.print("</head>");
-            response.print("<body>");
-            response.print("这里是正文......");
-            response.print("</body>");
-            response.print("</html>");
+
+            Servlet servlet = null;
+            if (request.getUrl().equals("login")){
+                servlet = new LoginServlet();
+            }else if (request.getUrl().equals("reg")){
+                servlet = new RegisterServlet();
+            }
+            servlet.service(request, response);
             // 关注了状态码
             response.pushToBrowser(200);
         } catch (IOException e) {
